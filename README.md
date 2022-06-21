@@ -6,9 +6,9 @@
 
 ![JH-AG01](./img/JH-AG01.jpg)
 
-## 使い方
+## 準備
 
-JH-AG01 を分解し，写真のようにコネクタターミナルから線だしを行い，Raspbeery Pi 等の UART 端子と接続する．
+JH-AG01 を分解し，写真のようにコネクタターミナルから線だしを行い，Raspbeery Pi 等の UART 端子と接続します．
 
 線だしするのは以下の端子になります．
 
@@ -19,13 +19,21 @@ JH-AG01 を分解し，写真のようにコネクタターミナルから線だ
 
 [^1]: 基板上のシルクは Zigbee モジュール視点で書かれています．
 
+## ライブラリのインストール
+
+```
+sudo apt install python3-serial
+sudo apt install python3-coloredlogs
+sudo apt install python3-fluent-logger # Fluentd への送信機能を使う場合
+```
+
 ## 使い方
 
 ```
 python3 src/sniffer.py
 ```
 
-しばらくすると HEMS コントローラが収集したデータが表示されます．
+実行してからしばらくすると，HEMS コントローラが収集したデータが下図のように表示されます．
 
 ![スクリーンショット](./img/screenshot.png)
 
@@ -33,4 +41,4 @@ python3 src/sniffer.py
 
 HEMS コントローラの IP アドレスにアクセスすると，Web インターフェースを表示できます．ID，パスワード共に root でログインできます．
 
-接続されているコンセントや，動作ログ等が確認できるので，便利です．
+接続されているコンセントや動作ログ等が確認できるので便利です．
