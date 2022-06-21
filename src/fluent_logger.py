@@ -25,7 +25,7 @@ def send(data):
         "sharp",
         {
             "hostname": dev_name,
-            "power": data["watt"],
+            "power": int(data["watt"]),
         },
     ):
         logging.error(fluent_logger.last_error)
