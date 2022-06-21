@@ -47,9 +47,9 @@ def sniff(ser, on_capture):
         payload = ser.read(header[1] + 5 - 2)
         if header[1] == 44:
             data = parse_packet(header + payload)
-            if date is not None:
+            if data is not None:
                 on_capture(data)
-              
+
 if __name__ == "__main__":
     import logging
     import logger
