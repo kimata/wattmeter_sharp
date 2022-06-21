@@ -4,13 +4,22 @@ import struct
 import pprint
 import datetime
 
+cache = {}
+
 def parse_packet(packet):
     dev_id = struct.unpack('<H', packet[5:7])[0]
+    index = packet[14]
     cur_time = struct.unpack('<H', packet[19:21])[0]
     cur_power = struct.unpack('<I', packet[26:30])[0]
     pre_time = struct.unpack('<H', packet[35:37])[0]
     pre_power = struct.unpack('<I', packet[42:46])[0]
 
+    # NOTE: 同じデータが2回送られることがあるので，新しいデータ毎にインクリメント
+    # しているフィールドを使ってはじく
+    if dev_id in cache and cache[dev_id] == index:
+        return Nonea
+    cache[dev_id] = index
+    
     dif_time = cur_time - pre_time
     if dif_time < 0:
         dif_time += 0x10000
@@ -37,7 +46,9 @@ def sniff(ser, on_capture):
 
         payload = ser.read(header[1] + 5 - 2)
         if header[1] == 44:
-            on_capture(parse_packet(header + payload))
+            data = parse_packet(header + payload)
+            if date is not None:
+                on_capture(data)
               
 if __name__ == "__main__":
     import logging
