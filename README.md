@@ -29,8 +29,10 @@ sudo apt install python3-fluent-logger # Fluentd への送信機能を使う場�
 
 ## 使い方
 
+シリアルポートが `/dev/ttyAMA0` の場合，下記のようにします．
+
 ```
-python3 src/sniffer.py
+python3 src/sniffer.py /dev/ttyAMA0
 ```
 
 実行してからしばらくすると，HEMS コントローラが収集したデータが下図のように表示されます．

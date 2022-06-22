@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import serial
 import struct
-import pprint
-import datetime
 
 cache = {}
 
@@ -56,12 +54,18 @@ def sniff(ser, on_capture):
 
 
 if __name__ == "__main__":
+    import sys
     import logging
     import logger
 
     logger.init("sniffer")
 
-    ser = serial.Serial("/dev/ttyAMA0", 115200, timeout=10)
+    if len(sys.argv) > 1:
+        port = sys.argv[1]
+    else:
+        port = "/dev/ttyAMA0"
+
+    ser = serial.Serial(port, 115200, timeout=10)
 
     def log(data):
         logging.info(data)
