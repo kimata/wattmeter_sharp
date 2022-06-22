@@ -1,3 +1,7 @@
+# シリアルポート
+PORT = "/dev/ttyAMA0"
+
+# Fluentd のアドレス
 FLUENT_HOST = "columbia.green-rabbit.net"
 
 DEV_MAP = {

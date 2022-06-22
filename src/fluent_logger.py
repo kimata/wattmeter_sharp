@@ -34,6 +34,6 @@ def send(data):
 logger.init("sniffer")
 
 fluent_logger = sender.FluentSender("hems", host=config.FLUENT_HOST)
-ser = serial.Serial("/dev/ttyAMA0", 115200, timeout=10)
+ser = serial.Serial(config.PORT, 115200, timeout=10)
 
 sniffer.sniff(ser, send)
