@@ -1,0 +1,8 @@
+serial:
+  port: /dev/ttyUSB0
+
+fluent:
+  host: proxy.green-rabbit.net
+
+liveness:
+  file: /dev/shm/healthz
