@@ -10,7 +10,8 @@ RUN apt-get install -y python3-yaml python3-coloredlogs
 RUN apt-get install -y python3-fluent-logger
 RUN apt-get install -y python3-serial
 
-WORKDIR /opt/jh-ag01_sniffer
+WORKDIR /opt/wattmeter_sharp
+
 COPY . .
 
 CMD ["./app/sharp_hems_logger.py"]
