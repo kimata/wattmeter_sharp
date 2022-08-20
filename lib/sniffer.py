@@ -44,7 +44,7 @@ def parse_packet(packet):
         "cur_power": cur_power,
         "pre_time": pre_time,
         "pre_power": pre_power,
-        "watt": float(dif_power) / dif_time,
+        "watt": round(float(dif_power) / dif_time, 2),
     }
 
     logging.info("Receive packet: {data}".format(data=str(data)))
