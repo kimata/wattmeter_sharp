@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# エアコン室外機冷却システム用スクリプト．
-# 室外機への噴霧を制御しつつ，実際に噴霧した量のモニタリングを行います．
-
 import os
 import sys
 import serial
