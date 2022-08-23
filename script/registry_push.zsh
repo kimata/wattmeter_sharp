@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-NAME=jh-ag01_sniffer
+NAME=wattmeter_sharp
 REGISTRY=registry.green-rabbit.net/library
 
 git push
