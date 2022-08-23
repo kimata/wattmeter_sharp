@@ -52,6 +52,12 @@ python3 lib/sniffer.py /dev/ttyAMA0
 
 データの収集は6分間隔で行われるようなので，時刻は 240 づつ増加します．
 
+## 応用
+
+`app/sharp_hems_logger.py` を使うと，定期的に電力計測し，Fluentd に送信することができます．
+
+設定は `config.yml` と `device.yml` で行います．
+
 ## ヒント
 
 HEMS コントローラの IP アドレスにアクセスすると，Web インターフェースを表示できます．ID，パスワード共に root でログインできます．
