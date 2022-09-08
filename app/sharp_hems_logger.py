@@ -17,26 +17,26 @@ import logger
 DEV_CONFIG = "../device.yml"
 
 
-def get_label(dev_list, dev_id):
+def get_name(dev_list, dev_id):
     for dev_info in dev_list:
         if dev_info["id"] == dev_id:
-            return dev_info["label"]
+            return dev_info["name"]
     return None
 
 
-def fluent_send(sender, data, dev_list):
-    label = get_label(dev_list, data["dev_id"])
+def fluent_send(sender, label, field, data, dev_list):
+    name = get_name(dev_list, data["dev_id"])
 
-    if label is None:
-        logging.warning("Unkown device: 0x{dev_id:04x}".format(dev_id=data["dev_id"]))
+    if name is None:
+        logging.warning("Unknown device: 0x{dev_id:04x}".format(dev_id=data["dev_id"]))
         return
 
     data = {
-        "hostname": label,
-        "power": int(data["watt"]),
+        "hostname": name,
+        field: int(data["watt"]),
     }
 
-    if sender.emit("sharp", data):
+    if sender.emit(label, data):
         logging.info("Send: {data}".format(data=str(data)))
         pathlib.Path(config["liveness"]["file"]).touch()
     else:
@@ -50,10 +50,17 @@ logging.info("Load config...")
 config = load_config()
 dev_list = load_config(DEV_CONFIG)
 
-sender = fluent.sender.FluentSender("hems", host=config["fluent"]["host"])
+sender = fluent.sender.FluentSender(
+    config["data"]["tag"], host=config["fluent"]["host"]
+)
 
 logging.info("Open serial port")
 ser = serial.Serial(config["serial"]["port"], 115200, timeout=10)
 
 logging.info("Start sniffing")
-sniffer.sniff(ser, lambda data: fluent_send(sender, data, dev_list))
+sniffer.sniff(
+    ser,
+    lambda data: fluent_send(
+        sender, config["data"]["label"], config["data"]["field"], data, dev_list
+    ),
+)

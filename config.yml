@@ -4,5 +4,16 @@ serial:
 fluent:
   host: proxy.green-rabbit.net
 
+influxdb:
+  url: http://proxy.green-rabbit.net:8086
+  token: strBCB9segqccgxsR5Xe_9RnCqkBFYX9aOKvxVR4lr3iLEb7HXuGqsN40YU6DIb6TZm9bvKLW5OWQS7sB8AQbQ==
+  org: home
+  bucket: sensor
+
+data:
+  tag: hems
+  label: sharp
+  field: power
+
 liveness:
   file: /dev/shm/healthz
