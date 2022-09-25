@@ -28,7 +28,9 @@ def fluent_send(sender, label, field, data, dev_list):
     name = get_name(dev_list, data["dev_id"])
 
     if name is None:
-        logging.warning("Unknown device: 0x{dev_id:04x}".format(dev_id=data["dev_id"]))
+        logging.warning(
+            "Unknown device: 0x{dev_id:04x} ({dev_id})".format(dev_id=data["dev_id"])
+        )
         return
 
     data = {
