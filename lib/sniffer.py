@@ -74,7 +74,7 @@ def sniff(ser, on_capture):
                 )
                 pass
         else:
-            logging.debug("Unknown packet: {data}".format(data=dump_packet(payload)))
+            logging.warning("Unknown packet: {data}".format(data=dump_packet(payload)))
 
 
 if __name__ == "__main__":
