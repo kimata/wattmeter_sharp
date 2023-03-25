@@ -65,6 +65,7 @@ def sniff(ser, on_capture):
         payload = ser.read(header[1] + 5 - 2)
         if header[1] == 0x2C:
             try:
+                logging.warning("Data packet: {data}".format(data=dump_packet(payload)))
                 data = parse_packet(header + payload)
                 if data is not None:
                     on_capture(data)
