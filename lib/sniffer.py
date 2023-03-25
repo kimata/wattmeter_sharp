@@ -12,20 +12,47 @@ def dump_packet(data):
     )
 
 
-def parse_packet(packet):
+def parse_packet_ieee_addr(packet):
+    addr_data = packet[4:12]
+
+    return ":".join(
+        map(
+            lambda x: "{:02X}".format(x),
+            reversed(struct.unpack("B" * len(addr_data), addr_data)),
+        )
+    )
+
+
+def parse_packet_dev_id(packet):
+    dev_id = struct.unpack("<H", packet[4:6])[0]
+    index = packet[6]
+
+    return {
+        "dev_id": dev_id,
+        "index": index,
+    }
+
+
+def parse_packet_measure(packet, dev_id_map):
     dev_id = struct.unpack("<H", packet[5:7])[0]
-    index = packet[14]
+    counter = packet[14]
     cur_time = struct.unpack("<H", packet[19:21])[0]
     cur_power = struct.unpack("<I", packet[26:30])[0]
     pre_time = struct.unpack("<H", packet[35:37])[0]
     pre_power = struct.unpack("<I", packet[42:46])[0]
 
+    if dev_id in dev_id_map:
+        addr = dev_id_map[dev_id]
+    else:
+        addr = "UNKNOWN"
+        logging.warning("dev_id = 0x{dev_id:04x} is unknown".format(dev_id=dev_id))
+
     # NOTE: 同じデータが2回送られることがあるので，新しいデータ毎にインクリメント
     # しているフィールドを使ってはじく
-    if dev_id in cache and cache[dev_id] == index:
+    if dev_id in cache and cache[dev_id] == counter:
         logging.info("Packet duplication detected")
         return None
-    cache[dev_id] = index
+    cache[dev_id] = counter
 
     dif_time = cur_time - pre_time
     if dif_time < 0:
@@ -39,6 +66,7 @@ def parse_packet(packet):
         dif_power += 0x100000000
 
     data = {
+        "addr": addr,
         "dev_id": dev_id,
         "dev_id_str": "0x{:04x}".format(dev_id),
         "cur_time": cur_time,
@@ -54,20 +82,37 @@ def parse_packet(packet):
 
 
 def sniff(ser, on_capture):
+    dev_id_map = {}
+    ieee_addr_list = []
+
     while True:
         header = ser.read(2)
 
         if len(header) == 0:
             continue
         elif len(header) == 1:
-            logging.warning("Short packet")
+            logging.debug("Short packet")
             continue
 
         payload = ser.read(header[1] + 5 - 2)
-        if header[1] == 0x2C:
+        if header[1] == 0x08:
+            logging.debug("IEEE addr payload: {data}".format(data=dump_packet(payload)))
+            ieee_addr_list.append(parse_packet_ieee_addr(header + payload))
+        elif header[1] == 0x12:
+            logging.debug("Dev ID payload: {data}".format(data=dump_packet(payload)))
+            data = parse_packet_dev_id(header + payload)
+            if data["index"] < len(ieee_addr_list):
+                dev_id_map[data["dev_id"]] = ieee_addr_list[data["index"]]
+                if data["index"] == (len(ieee_addr_list) - 1):
+                    # NOTE: この通信周期において dev_id のマップを作り終えたら，
+                    # 次の周期に備えてリストをクリアする
+                    ieee_addr_list = []
+        elif header[1] == 0x2C:
             try:
-                logging.warning("Data packet: {data}".format(data=dump_packet(payload)))
-                data = parse_packet(header + payload)
+                logging.debug(
+                    "Measure payload: {data}".format(data=dump_packet(payload))
+                )
+                data = parse_packet_measure(header + payload, dev_id_map)
                 if data is not None:
                     on_capture(data)
             except:
@@ -76,7 +121,9 @@ def sniff(ser, on_capture):
                 )
                 pass
         else:
-            logging.warning("Unknown packet: {data}".format(data=dump_packet(payload)))
+            logging.warning(
+                "Unknown packet: {data}".format(data=dump_packet(header + payload))
+            )
 
 
 if __name__ == "__main__":
