@@ -40,6 +40,7 @@ def parse_packet(packet):
 
     data = {
         "dev_id": dev_id,
+        "dev_id_str": "0x{:04x}".format(dev_id),
         "cur_time": cur_time,
         "cur_power": cur_power,
         "pre_time": pre_time,
