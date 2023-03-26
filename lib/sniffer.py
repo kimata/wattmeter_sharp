@@ -1,9 +1,28 @@
 #!/usr/bin/env python3
+import pathlib
+import pickle
+
 import serial
 import struct
 import logging
+import json
 
 cache = {}
+
+DEV_ID_CACHE = "../dev_id.dat"
+
+
+def dev_id_map_load():
+    if pathlib.Path(DEV_ID_CACHE).exists():
+        with open(DEV_ID_CACHE, "rb") as f:
+            return pickle.load(f)
+    else:
+        return {}
+
+
+def dev_id_map_store(dev_id_map):
+    with open(DEV_ID_CACHE, "wb") as f:
+        pickle.dump(dev_id_map, f)
 
 
 def dump_packet(data):
@@ -81,14 +100,14 @@ def parse_packet_measure(packet, dev_id_map):
         "watt": round(float(dif_power) / dif_time, 2),
     }
 
-    logging.info("Receive packet: {data}".format(data=str(data)))
+    logging.debug("Receive packet: {data}".format(data=str(data)))
 
     return data
 
 
 def sniff(ser, on_capture):
-    dev_id_map = {}
     ieee_addr_list = []
+    dev_id_map = dev_id_map_load()
 
     while True:
         header = ser.read(2)
@@ -108,10 +127,21 @@ def sniff(ser, on_capture):
             data = parse_packet_dev_id(header + payload)
             if data["index"] < len(ieee_addr_list):
                 dev_id_map[data["dev_id"]] = ieee_addr_list[data["index"]]
-                if data["index"] == (len(ieee_addr_list) - 1):
-                    # NOTE: この通信周期において dev_id のマップを作り終えたら，
-                    # 次の周期に備えてリストをクリアする
-                    ieee_addr_list = []
+            else:
+                logging.warning(
+                    "Unable to identify IEEE addr for dev_id={dev_id}".format(
+                        dev_id="0x{:04X}".format(data["dev_id"])
+                    )
+                )
+
+            if data["index"] == (len(ieee_addr_list) - 1):
+                # NOTE: スクリプト起動直後に前回動作中のマップを参照できるようにする
+                dev_id_map_store(dev_id_map)
+
+                # NOTE: 次の周期に備えてリストをクリアする
+                logging.debug("Clear IEEE addr list")
+                ieee_addr_list = []
+
         elif header[1] == 0x2C:
             try:
                 logging.debug(
