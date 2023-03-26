@@ -17,9 +17,9 @@ import logger
 DEV_CONFIG = "../device.yml"
 
 
-def get_name(dev_list, dev_id):
-    for dev_info in dev_list:
-        if dev_info["id"] == dev_id:
+def get_name(addr_list, addr):
+    for dev_info in addr_list:
+        if dev_info["addr"].lower() == addr.lower():
             return dev_info["name"]
     return None
 
@@ -30,7 +30,7 @@ def fluent_send(sender, label, field, data):
 
     if name is None:
         logging.warning(
-            "Unknown device: 0x{dev_id:04x} ({dev_id})".format(dev_id=data["dev_id"])
+            "Unknown device: dev_id = {dev_id}".format(dev_id=data["dev_id_str"])
         )
         return
 

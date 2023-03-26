@@ -45,7 +45,12 @@ def parse_packet_measure(packet, dev_id_map):
         addr = dev_id_map[dev_id]
     else:
         addr = "UNKNOWN"
-        logging.warning("dev_id = 0x{dev_id:04x} is unknown".format(dev_id=dev_id))
+        logging.warning("dev_id = 0x{dev_id:04X} is unknown".format(dev_id=dev_id))
+        logging.warning(
+            "dev_ip_map = {dev_id_map}".format(
+                dev_id_map=json.dumps(dev_id_map, indent=4)
+            )
+        )
 
     # NOTE: 同じデータが2回送られることがあるので，新しいデータ毎にインクリメント
     # しているフィールドを使ってはじく
@@ -68,7 +73,7 @@ def parse_packet_measure(packet, dev_id_map):
     data = {
         "addr": addr,
         "dev_id": dev_id,
-        "dev_id_str": "0x{:04x}".format(dev_id),
+        "dev_id_str": "0x{:04X}".format(dev_id),
         "cur_time": cur_time,
         "cur_power": cur_power,
         "pre_time": pre_time,
@@ -121,7 +126,7 @@ def sniff(ser, on_capture):
                 )
                 pass
         else:
-            logging.warning(
+            logging.debug(
                 "Unknown packet: {data}".format(data=dump_packet(header + payload))
             )
 
