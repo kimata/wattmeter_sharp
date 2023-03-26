@@ -31,7 +31,7 @@ def hems_status_check(config, dev_list):
 
 
 ######################################################################
-logger.init("hems.wattmeter.sharp")
+logger.init("hems.wattmeter.sharp", level=logging.INFO)
 
 logging.info("Load config...")
 config = load_config()

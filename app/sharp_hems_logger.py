@@ -47,7 +47,7 @@ def fluent_send(sender, label, field, data):
 
 
 ######################################################################
-logger.init("hems.wattmeter.sharp")
+logger.init("hems.wattmeter.sharp", level=logging.INFO)
 
 logging.info("Load config...")
 config = load_config()
