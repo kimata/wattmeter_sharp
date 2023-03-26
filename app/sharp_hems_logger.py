@@ -24,8 +24,9 @@ def get_name(dev_list, dev_id):
     return None
 
 
-def fluent_send(sender, label, field, data, dev_list):
-    name = get_name(dev_list, data["dev_id"])
+def fluent_send(sender, label, field, data):
+    addr_list = load_config(DEV_CONFIG)
+    name = get_name(addr_list, data["addr"])
 
     if name is None:
         logging.warning(
@@ -50,7 +51,6 @@ logger.init("hems.wattmeter.sharp")
 
 logging.info("Load config...")
 config = load_config()
-dev_list = load_config(DEV_CONFIG)
 
 sender = fluent.sender.FluentSender(
     config["data"]["tag"], host=config["fluent"]["host"]
@@ -63,6 +63,6 @@ logging.info("Start sniffing")
 sniffer.sniff(
     ser,
     lambda data: fluent_send(
-        sender, config["data"]["label"], config["data"]["field"], data, dev_list
+        sender, config["data"]["label"], config["data"]["field"], data
     ),
 )
