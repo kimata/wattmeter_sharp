@@ -9,6 +9,12 @@ import json
 
 cache = {}
 
+# 電力に掛ける倍率
+# NOTE:
+# 電力会社のスマートメータの読み値と比較すると常に電力が小さいので，
+# 一定の倍率を掛ける．
+WATT_SCALE = 1.5
+
 DEV_ID_CACHE = "../dev_id.dat"
 
 
@@ -97,7 +103,7 @@ def parse_packet_measure(packet, dev_id_map):
         "cur_power": cur_power,
         "pre_time": pre_time,
         "pre_power": pre_power,
-        "watt": round(float(dif_power) / dif_time, 2),
+        "watt": round(float(dif_power) / dif_time * WATT_SCALE, 2),
     }
 
     logging.debug("Receive packet: {data}".format(data=str(data)))
