@@ -2,6 +2,7 @@
 import pathlib
 import pickle
 
+import os
 import serial
 import struct
 import logging
@@ -15,7 +16,9 @@ cache = {}
 # 一定の倍率を掛ける．
 WATT_SCALE = 1.5
 
-DEV_ID_CACHE = "../dev_id.dat"
+DEV_ID_CACHE = (
+    pathlib.Path(os.path.dirname(__file__)).parents[2] / "data" / "dev_id.dat"
+)
 
 
 def dev_id_map_load():
