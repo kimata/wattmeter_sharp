@@ -25,6 +25,7 @@ def get_name(addr_list, addr):
 
 
 def fluent_send(sender, label, field, data):
+    logging.info("Load device list...")
     addr_list = load_config(DEV_CONFIG)
     name = get_name(addr_list, data["addr"])
 
