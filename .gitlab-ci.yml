@@ -15,7 +15,7 @@ build-image:
     - export GIT_SSL_NO_VERIFY=1
     - git clone https://gitlab.green-rabbit.net/kimata/wattmeter_config.git
     - mv wattmeter_config/sharp_config.yaml config.yaml
-    - mv wattmeter_config/sharp_devie.yaml device.yaml
+    - mv wattmeter_config/sharp_device.yaml device.yaml
     - docker pull ${CI_REGISTRY_IMAGE} || true
     - docker build . -t ${CI_REGISTRY_IMAGE}
     - docker push ${CI_REGISTRY_IMAGE}
