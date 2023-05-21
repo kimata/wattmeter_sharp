@@ -14,7 +14,7 @@ import sniffer
 from config import load_config
 import logger
 
-DEV_CONFIG = "../device.yml"
+DEV_CONFIG = "device.yaml"
 
 
 def get_name(addr_list, addr):
