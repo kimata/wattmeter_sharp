@@ -16,8 +16,8 @@ import logger
 
 DEV_CONFIG = "device.yaml"
 
-dev_config_mtime = None
 addr_list_cache = None
+dev_config_mtime = None
 
 
 def get_name(addr_list, addr):
@@ -28,7 +28,7 @@ def get_name(addr_list, addr):
 
 
 def reload_addr_list(dev_config):
-    global addr_list_cache
+    global addr_list_cache, dev_config_mtime
     if (dev_config_mtime is not None) and (
         dev_config_mtime == abs_path(dev_config).stat().st_mtime
     ):
@@ -37,6 +37,7 @@ def reload_addr_list(dev_config):
     logging.info("Load device list...")
     addr_list = load_config(dev_config)
     addr_list_cache = addr_list
+    dev_config_mtime = abs_path(dev_config).stat().st_mtime
 
     return addr_list
 
