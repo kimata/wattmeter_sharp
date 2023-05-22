@@ -89,11 +89,7 @@ if __name__ == "__main__":
     server_host = args["-s"]
     server_port = int(args["-p"])
     serial_port = args["-t"]
-
-    if args["-d"]:
-        log_level = logging.DEBUG
-    else:
-        log_level = logging.INFO
+    log_level = logging.DEBUG if args["-d"] else logging.INFO
 
     logger.init("test", level=log_level)
 

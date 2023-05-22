@@ -42,13 +42,14 @@ def notify_error(config):
 ######################################################################
 args = docopt(__doc__)
 
-logger.init("hems.wattmeter.sharp", level=logging.INFO)
-
 config = load_config(args["-f"])
 
 serial_port = os.environ.get("HEMS_SERIAL_PORT", args["-t"])
 server_port = os.environ.get("HEMS_SERVER_PORT", args["-p"])
 liveness_file = pathlib.Path(config["liveness"]["file"])
+log_level = logging.DEBUG if args["-d"] else logging.INFO
+
+logger.init("hems.wattmeter.sharp", level=log_level)
 
 logging.info(
     "Start server (serial: {serial}, port: {port}".format(

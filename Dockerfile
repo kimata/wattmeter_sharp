@@ -5,6 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
     language-pack-ja \
+    python3 python3-pip \
     python3-docopt \
     python3-yaml python3-coloredlogs \
     python3-fluent-logger \
@@ -13,6 +14,9 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/wattmeter_sharp
+
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
 
 COPY . .
 
