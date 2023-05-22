@@ -3,7 +3,7 @@ image: docker:23.0
 stages:
   - build
   # - test
-  - deploy
+  # - deploy
 
 # 本番設定ファイルで，問題なく動くかチェック
 build-image:
@@ -62,12 +62,12 @@ build-image:
 #     - docker pull ${CI_REGISTRY_IMAGE}
 #     - docker run -t ${CI_REGISTRY_IMAGE} src/display_image.py -f config.yaml -t ${KINDLE_HOSTNAME} -s
 
-deploy:
-  stage: deploy
-  image:
-    name: bitnami/kubectl:latest
-    entrypoint: ['']
-  script:
-    - kubectl config get-contexts
-    - kubectl config use-context kimata/wattmeter_sharp:pod-rollout
-    - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment wattmeter-sharp
+# deploy:
+#   stage: deploy
+#   image:
+#     name: bitnami/kubectl:latest
+#     entrypoint: ['']
+#   script:
+#     - kubectl config get-contexts
+#     - kubectl config use-context kimata/wattmeter_sharp:pod-rollout
+#     - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment wattmeter-sharp
