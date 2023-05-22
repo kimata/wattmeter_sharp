@@ -38,11 +38,11 @@ dev_config_mtime = None
 
 def notify_error(config):
     notify_slack.error(
-        config["slack"]["bot_token"],
-        config["slack"]["error"]["channel"],
-        config["slack"]["from"],
+        config["SLACK"]["BOT_TOKEN"],
+        config["SLACK"]["ERROR"]["CHANNEL"],
+        config["SLACK"]["FROM"],
         traceback.format_exc(),
-        config["slack"]["error"]["interval_min"],
+        config["SLACK"]["ERROR"]["INTERVAL_MIN"],
     )
 
 
@@ -86,7 +86,7 @@ def fluent_send(sender, label, field, data):
 
         if sender.emit(label, data):
             logging.info("Send: {data}".format(data=str(data)))
-            pathlib.Path(config["liveness"]["file"]).touch()
+            pathlib.Path(config["LIVENESS"]["FILE"]).touch()
         else:
             logging.error(sender.last_error)
     except:
@@ -103,7 +103,7 @@ config = load_config(args["-f"])
 
 server_host = os.environ.get("HEMS_SERVER_HOST", args["-s"])
 server_port = os.environ.get("HEMS_SERVER_PORT", args["-p"])
-liveness_file = pathlib.Path(config["liveness"]["file"])
+liveness_file = pathlib.Path(config["LIVENESS"]["FILE"])
 log_level = logging.DEBUG if args["-d"] else logging.INFO
 
 logger.init("hems.wattmeter.sharp", level=log_level)
@@ -116,12 +116,12 @@ logging.info(
 
 logging.info(
     "Initialize Fluentd sender (host: {host}, tag: {tag})".format(
-        host=config["fluent"]["host"],
-        tag=config["data"]["tag"],
+        host=config["FLUENT"]["HOST"],
+        tag=config["DATA"]["TAG"],
     )
 )
 sender = fluent.sender.FluentSender(
-    config["data"]["tag"], host=config["fluent"]["host"]
+    config["DATA"]["TAG"], host=config["FLUENT"]["HOST"]
 )
 
 try:
@@ -132,7 +132,7 @@ try:
             header,
             payload,
             lambda data: fluent_send(
-                sender, config["data"]["label"], config["data"]["field"], data
+                sender, config["DATA"]["LABEL"], config["DATA"]["FIELD"], data
             ),
         ),
     )

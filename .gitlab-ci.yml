@@ -62,12 +62,32 @@ build-image:
 #     - docker pull ${CI_REGISTRY_IMAGE}
 #     - docker run -t ${CI_REGISTRY_IMAGE} src/display_image.py -f config.yaml -t ${KINDLE_HOSTNAME} -s
 
-# deploy:
-#   stage: deploy
-#   image:
-#     name: bitnami/kubectl:latest
-#     entrypoint: ['']
-#   script:
-#     - kubectl config get-contexts
-#     - kubectl config use-context kimata/wattmeter_sharp:pod-rollout
-#     - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment wattmeter-sharp
+deploy-server:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: ['']
+  script:
+    - kubectl config get-contexts
+    - kubectl config use-context kimata/wattmeter_sharp:pod-rollout
+    - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment wattmeter-sharp-server
+  rules:
+    - changes:
+        - app/sharp_hems_logger.py
+        - lib/serial_pubsub.py*
+        - lib/sniffer.py
+
+deploy-client:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: ['']
+  script:
+    - kubectl config get-contexts
+    - kubectl config use-context kimata/wattmeter_sharp:pod-rollout
+    - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment wattmeter-sharp-client
+  rules:
+    - changes:
+        - app/sharp_config.yaml
+        - lib/serial_pubsub.py*
+        - lib/sniffer.py

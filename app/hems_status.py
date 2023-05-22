@@ -11,17 +11,18 @@ from sensor_data import fetch_data
 from config import load_config
 import logger
 
-DEV_CONFIG = "../device.yml"
+DEV_CONFIG = "device.yaml"
 
 
 def hems_status_check(config, dev_list):
     for dev_info in dev_list:
         data_valid = fetch_data(
-            config["influxdb"],
-            config["data"]["tag"],
-            config["data"]["label"],
+            config["INFLUXDB"],
+            "{tag}.{label}".format(
+                tag=config["DATA"]["TAG"], label=config["DATA"]["LABEL"]
+            ),
             dev_info["name"],
-            config["data"]["field"],
+            config["DATA"]["FIELD"],
             "1h",
         )["valid"]
         if data_valid:

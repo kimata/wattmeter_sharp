@@ -31,11 +31,11 @@ import logger
 
 def notify_error(config):
     notify_slack.error(
-        config["slack"]["bot_token"],
-        config["slack"]["error"]["channel"],
-        config["slack"]["from"],
+        config["SLACK"]["BOT_TOKEN"],
+        config["SLACK"]["ERROR"]["CHANNEL"],
+        config["SLACK"]["FROM"],
         traceback.format_exc(),
-        config["slack"]["error"]["interval_min"],
+        config["SLACK"]["ERROR"]["INTERVAL_MIN"],
     )
 
 
@@ -46,13 +46,13 @@ config = load_config(args["-f"])
 
 serial_port = os.environ.get("HEMS_SERIAL_PORT", args["-t"])
 server_port = os.environ.get("HEMS_SERVER_PORT", args["-p"])
-liveness_file = pathlib.Path(config["liveness"]["file"])
+liveness_file = pathlib.Path(config["LIVENESS"]["FILE"])
 log_level = logging.DEBUG if args["-d"] else logging.INFO
 
 logger.init("hems.wattmeter.sharp", level=log_level)
 
 logging.info(
-    "Start server (serial: {serial}, port: {port}".format(
+    "Start server (serial: {serial}, port: {port})".format(
         serial=serial_port, port=server_port
     )
 )

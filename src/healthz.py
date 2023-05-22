@@ -11,7 +11,7 @@ from config import load_config
 
 config = load_config()
 
-liveness_file = pathlib.Path(config["liveness"]["file"])
+liveness_file = pathlib.Path(config["LIVENESS"]["FILE"])
 
 if not liveness_file.exists():
     print("Not executed.", file=sys.stderr)
