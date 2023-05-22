@@ -4,12 +4,12 @@ import pathlib
 import pickle
 
 import os
-import serial
 import struct
 import logging
 import json
 
-cache = {}
+counter_hist = {}
+ieee_addr_list = []
 
 # 電力に掛ける倍率
 # NOTE:
@@ -17,13 +17,11 @@ cache = {}
 # 一定の倍率を掛ける．
 WATT_SCALE = 1.5
 
-DEV_ID_CACHE = (
-    pathlib.Path(os.path.dirname(__file__)).parents[2] / "data" / "dev_id.dat"
-)
+DEV_ID_CACHE = pathlib.Path(os.path.dirname(__file__)).parent / "data" / "dev_id.dat"
 
 
 def dev_id_map_load():
-    if pathlib.Path(DEV_ID_CACHE).exists():
+    if DEV_ID_CACHE.exists():
         with open(DEV_ID_CACHE, "rb") as f:
             return pickle.load(f)
     else:
@@ -31,6 +29,8 @@ def dev_id_map_load():
 
 
 def dev_id_map_store(dev_id_map):
+    logging.info("Store dev_id_map")
+
     with open(DEV_ID_CACHE, "wb") as f:
         pickle.dump(dev_id_map, f)
 
@@ -63,6 +63,8 @@ def parse_packet_dev_id(packet):
 
 
 def parse_packet_measure(packet, dev_id_map):
+    global counter_hist
+
     dev_id = struct.unpack("<H", packet[5:7])[0]
     counter = packet[14]
     cur_time = struct.unpack("<H", packet[19:21])[0]
@@ -83,10 +85,10 @@ def parse_packet_measure(packet, dev_id_map):
 
     # NOTE: 同じデータが2回送られることがあるので，新しいデータ毎にインクリメント
     # しているフィールドを使ってはじく
-    if dev_id in cache and cache[dev_id] == counter:
+    if dev_id in counter_hist and counter_hist[dev_id] == counter:
         logging.info("Packet duplication detected")
         return None
-    cache[dev_id] = counter
+    counter_hist[dev_id] = counter
 
     dif_time = cur_time - pre_time
     if dif_time < 0:
@@ -115,76 +117,57 @@ def parse_packet_measure(packet, dev_id_map):
     return data
 
 
-def sniff(ser, on_capture):
-    ieee_addr_list = []
+def handle_packet(header, payload, on_capture):
+    global ieee_addr_list
     dev_id_map = dev_id_map_load()
 
-    while True:
-        header = ser.read(2)
-
-        if len(header) == 0:
-            continue
-        elif len(header) == 1:
-            logging.debug("Short packet")
-            continue
-
-        payload = ser.read(header[1] + 5 - 2)
-        if header[1] == 0x08:
-            logging.debug("IEEE addr payload: {data}".format(data=dump_packet(payload)))
-            ieee_addr_list.append(parse_packet_ieee_addr(header + payload))
-        elif header[1] == 0x12:
-            logging.debug("Dev ID payload: {data}".format(data=dump_packet(payload)))
-            data = parse_packet_dev_id(header + payload)
-            if data["index"] < len(ieee_addr_list):
-                dev_id_map[data["dev_id"]] = ieee_addr_list[data["index"]]
-            else:
-                logging.warning(
-                    "Unable to identify IEEE addr for dev_id={dev_id}".format(
+    if header[1] == 0x08:
+        logging.debug("IEEE addr payload: {data}".format(data=dump_packet(payload)))
+        ieee_addr_list.append(parse_packet_ieee_addr(header + payload))
+    elif header[1] == 0x12:
+        logging.debug("Dev ID payload: {data}".format(data=dump_packet(payload)))
+        data = parse_packet_dev_id(header + payload)
+        if data["index"] < len(ieee_addr_list):
+            if data["dev_id"] not in dev_id_map:
+                logging.info(
+                    "Find IEEE addr for dev_id={dev_id}".format(
                         dev_id="0x{:04X}".format(data["dev_id"])
                     )
                 )
-
-            if data["index"] == (len(ieee_addr_list) - 1):
-                # NOTE: スクリプト起動直後に前回動作中のマップを参照できるようにする
+                dev_id_map[data["dev_id"]] = ieee_addr_list[data["index"]]
                 dev_id_map_store(dev_id_map)
-
-                # NOTE: 次の周期に備えてリストをクリアする
-                logging.debug("Clear IEEE addr list")
-                ieee_addr_list = []
-
-        elif header[1] == 0x2C:
-            try:
-                logging.debug(
-                    "Measure payload: {data}".format(data=dump_packet(payload))
+            elif dev_id_map[data["dev_id"]] != ieee_addr_list[data["index"]]:
+                logging.info(
+                    "Update IEEE addr for dev_id={dev_id}".format(
+                        dev_id="0x{:04X}".format(data["dev_id"])
+                    )
                 )
-                data = parse_packet_measure(header + payload, dev_id_map)
-                if data is not None:
-                    on_capture(data)
-            except:
-                logging.warning(
-                    "Invalid packet: {data}".format(data=dump_packet(header + payload))
-                )
-                pass
+                dev_id_map[data["dev_id"]] = ieee_addr_list[data["index"]]
+                dev_id_map_store(dev_id_map)
         else:
-            logging.debug(
-                "Unknown packet: {data}".format(data=dump_packet(header + payload))
+            logging.warning(
+                "Unable to identify IEEE addr for dev_id={dev_id}".format(
+                    dev_id="0x{:04X}".format(data["dev_id"])
+                )
             )
 
+        if data["index"] == (len(ieee_addr_list) - 1):
+            # NOTE: 次の周期に備えてリストをクリアする
+            logging.debug("Clear IEEE addr list")
+            ieee_addr_list = []
 
-if __name__ == "__main__":
-    import sys
-    import logger
-
-    logger.init("test")
-
-    if len(sys.argv) > 1:
-        port = sys.argv[1]
+    elif header[1] == 0x2C:
+        try:
+            logging.debug("Measure payload: {data}".format(data=dump_packet(payload)))
+            data = parse_packet_measure(header + payload, dev_id_map)
+            if data is not None:
+                on_capture(data)
+        except:
+            logging.warning(
+                "Invalid packet: {data}".format(data=dump_packet(header + payload))
+            )
+            pass
     else:
-        port = "/dev/ttyUSB0"
-
-    ser = serial.Serial(port, 115200, timeout=10)
-
-    def log(data):
-        logging.info("Handle packet: {data}".format(data=dump_packet(data)))
-
-    sniff(ser, log)
+        logging.debug(
+            "Unknown packet: {data}".format(data=dump_packet(header + payload))
+        )
