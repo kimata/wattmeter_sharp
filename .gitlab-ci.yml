@@ -3,7 +3,7 @@ image: docker:23.0
 stages:
   - build
   # - test
-  # - deploy
+  - deploy
 
 # 本番設定ファイルで，問題なく動くかチェック
 build-image:
