@@ -4,12 +4,13 @@
 センサーから収集した消費電力データを Fluentd を使って送信します．
 
 Usage:
-  sharp_hmes_server.py [-f CONFIG] [-s SERVER_HOST] [-p SERVER_PORT] [-d]
+  sharp_hmes_logger.py [-f CONFIG] [-s SERVER_HOST] [-p SERVER_PORT] [-T] [-d]
 
 Options:
   -f CONFIG         : 設定ファイルを指定します． [default: config.yaml]
   -s SERVER_HOST    : サーバーのホスト名を指定します． [default: localhost]
   -p SERVER_PORT    : ZeroMQ の Pub サーバーを動作させるポートを指定します． [default: 4444]
+  -T                : テストモードで動作します．
   -d                : デバッグモードで動作します．
 """
 
@@ -105,6 +106,7 @@ server_host = os.environ.get("HEMS_SERVER_HOST", args["-s"])
 server_port = os.environ.get("HEMS_SERVER_PORT", args["-p"])
 liveness_file = pathlib.Path(config["LIVENESS"]["FILE"])
 log_level = logging.DEBUG if args["-d"] else logging.INFO
+test_mode = args["-T"]
 
 logger.init("hems.wattmeter.sharp", level=log_level)
 
@@ -113,6 +115,10 @@ logging.info(
         host=server_host, port=server_port
     )
 )
+
+if test_mode:
+    logging.info("TEST MODE")
+
 
 logging.info(
     "Initialize Fluentd sender (host: {host}, tag: {tag})".format(
@@ -124,18 +130,26 @@ sender = fluent.sender.FluentSender(
     config["DATA"]["TAG"], host=config["FLUENT"]["HOST"]
 )
 
-try:
-    serial_pubsub.start_client(
-        server_host,
-        server_port,
-        lambda header, payload: sniffer.handle_packet(
+
+def handle_packet(header, payload):
+    global test_mode
+
+    if test_mode:
+        sniffer.handle_packet(
+            header, payload, lambda data: (logging.info("OK"), os._exit(0))
+        )
+    else:
+        sniffer.handle_packet(
             header,
             payload,
             lambda data: fluent_send(
                 sender, config["DATA"]["LABEL"], config["DATA"]["FIELD"], data
             ),
-        ),
-    )
+        )
+
+
+try:
+    serial_pubsub.start_client(server_host, server_port, handle_packet)
 except:
     notify_error(config)
     raise
