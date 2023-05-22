@@ -15,10 +15,28 @@ Options:
 
 from docopt import docopt
 
+import os
+import sys
+import pathlib
+import logging
+import traceback
+
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, "lib"))
 
 import serial_pubsub
+from config import load_config
+import notify_slack
 import logger
+
+
+def notify_error(config):
+    notify_slack.error(
+        config["slack"]["bot_token"],
+        config["slack"]["error"]["channel"],
+        config["slack"]["from"],
+        traceback.format_exc(),
+        config["slack"]["error"]["interval_min"],
+    )
 
 
 ######################################################################
@@ -29,7 +47,7 @@ logger.init("hems.wattmeter.sharp", level=logging.INFO)
 config = load_config(args["-f"])
 
 serial_port = os.environ.get("HEMS_SERIAL_PORT", args["-t"])
-server_port = os.environ.get("HEMS_SERVER_PORT", args["-s"])
+server_port = os.environ.get("HEMS_SERVER_PORT", args["-p"])
 liveness_file = pathlib.Path(config["liveness"]["file"])
 
 logging.info(
@@ -38,4 +56,8 @@ logging.info(
     )
 )
 
-start_server(serial_port, server_port, liveness_file)
+try:
+    serial_pubsub.start_server(serial_port, server_port, liveness_file)
+except:
+    notify_error(config)
+    raise
