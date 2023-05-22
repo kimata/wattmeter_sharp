@@ -24,7 +24,7 @@ SER_BAUD = 115200
 SER_TIMEOUT = 10
 
 
-def start_server(serial_port, server_port):
+def start_server(serial_port, server_port, liveness_file=None):
     logging.info("Start serial server...")
 
     context = zmq.Context()
@@ -56,6 +56,8 @@ def start_server(serial_port, server_port):
                 ch=CH, header=header_hex, payload=payload_hex
             )
         )
+        if liveness_file is not None:
+            liveness_file.touch(exist_ok=True)
 
 
 def start_client(server_host, server_port, func):
