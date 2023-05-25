@@ -70,7 +70,7 @@ def start_client(server_host, server_port, func):
     logging.info("Client initialize done.")
 
     while True:
-        ch, header_hex, payload_hex = socket.recv_string().split(" ", 3)
+        ch, header_hex, payload_hex = socket.recv_string().split(" ", 2)
         logging.debug(
             "recv {header} {payload}".format(header=header_hex, payload=payload_hex)
         )
