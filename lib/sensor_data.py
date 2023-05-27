@@ -4,10 +4,10 @@
 InfluxDB から電子機器の使用時間を取得します．
 
 Usage:
-  sensor_data.py [-f CONFIG]  [-e EVERY] [-w WINDOW]
+  sensor_data.py [-c CONFIG]  [-e EVERY] [-w WINDOW]
 
 Options:
-  -f CONFIG    : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
+  -c CONFIG    : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
   -e EVERY     : 何分ごとのデータを取得するか [default: 1]
   -w WINDOWE   : 算出に使うウィンドウ [default: 5]
 """
@@ -361,7 +361,7 @@ if __name__ == "__main__":
 
     logger.init("test", logging.DEBUG)
 
-    config = load_config(args["-f"])
+    config = load_config(args["-c"])
     every = args["-e"]
     window = args["-w"]
 

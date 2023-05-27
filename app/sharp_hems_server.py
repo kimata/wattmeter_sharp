@@ -4,10 +4,10 @@
 センサーからのパケットを Pub-Sub パターンで配信します．
 
 Usage:
-  sharp_hmes_server.py [-f CONFIG] [-t SERIAL_PORT] [-p SERVER_PORT] [-d]
+  sharp_hmes_server.py [-c CONFIG] [-t SERIAL_PORT] [-p SERVER_PORT] [-d]
 
 Options:
-  -f CONFIG         : 設定ファイルを指定します． [default: config.yaml]
+  -c CONFIG         : 設定ファイルを指定します． [default: config.yaml]
   -t SERIAL_PORT    : HEMS 中継器を接続するシリアルポートを指定します． [default: /dev/ttyUSB0]
   -p SERVER_PORT    : ZeroMQ の Pub サーバーを動作させるポートを指定します． [default: 4444]
   -d                : デバッグモードで動作します．
@@ -42,7 +42,7 @@ def notify_error(config):
 ######################################################################
 args = docopt(__doc__)
 
-config = load_config(args["-f"])
+config = load_config(args["-c"])
 
 serial_port = os.environ.get("HEMS_SERIAL_PORT", args["-t"])
 server_port = os.environ.get("HEMS_SERVER_PORT", args["-p"])
