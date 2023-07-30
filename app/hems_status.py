@@ -23,7 +23,7 @@ def hems_status_check(config, dev_list):
             ),
             dev_info["name"],
             config["DATA"]["FIELD"],
-            "24h",
+            "1h",
         )["valid"]
         if data_valid:
             logging.info("{name:0s}: OK".format(name=dev_info["name"]))

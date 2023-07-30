@@ -123,11 +123,11 @@ if test_mode:
 logging.info(
     "Initialize Fluentd sender (host: {host}, tag: {tag})".format(
         host=config["FLUENT"]["HOST"],
-        tag=config["DATA"]["TAG"],
+        tag=config["FLUENT"]["DATA"]["TAG"],
     )
 )
 sender = fluent.sender.FluentSender(
-    config["DATA"]["TAG"], host=config["FLUENT"]["HOST"]
+    config["FLUENT"]["DATA"]["TAG"], host=config["FLUENT"]["HOST"]
 )
 
 
@@ -143,7 +143,10 @@ def handle_packet(header, payload):
             header,
             payload,
             lambda data: fluent_send(
-                sender, config["DATA"]["LABEL"], config["DATA"]["FIELD"], data
+                sender,
+                config["FLUENT"]["DATA"]["LABEL"],
+                config["FLUENT"]["DATA"]["FIELD"],
+                data,
             ),
         )
 
