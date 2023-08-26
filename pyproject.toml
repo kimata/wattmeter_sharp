@@ -13,6 +13,7 @@ fluent-logger = "^0.10.0"
 pyserial = "^3.5"
 slack-sdk = "^3.21.3"
 python = "^3.10"
+zmq = "^0.0.0"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.7.0"
