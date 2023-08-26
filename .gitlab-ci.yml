@@ -8,7 +8,8 @@ stages:
 # 本番設定ファイルで，問題なく動くかチェック
 build-image:
   stage: build
-  image: registry.green-rabbit.net:5000/kimata/ubuntu-docker-build:latest
+
+  image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230812D
 
   script:
     # - docker rm $(docker ps -a --filter 'status=exited' -q) || true
@@ -35,7 +36,7 @@ deploy-server:
   stage: deploy
   image:
     name: bitnami/kubectl:latest
-    entrypoint: ['']
+    entrypoint: [""]
   script:
     - kubectl config get-contexts
     - kubectl config use-context kimata/wattmeter_sharp:pod-rollout
@@ -50,7 +51,7 @@ deploy-client:
   stage: deploy
   image:
     name: bitnami/kubectl:latest
-    entrypoint: ['']
+    entrypoint: [""]
   script:
     - kubectl config get-contexts
     - kubectl config use-context kimata/wattmeter_sharp:pod-rollout

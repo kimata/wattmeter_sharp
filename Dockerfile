@@ -1,23 +1,31 @@
-FROM ubuntu:22.04
+FROM python:3.11.4-bookworm as build
 
-ENV TZ=Asia/Tokyo
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && apt-get install -y \
-    language-pack-ja \
-    python3 python3-pip \
-    python3-docopt \
-    python3-yaml python3-coloredlogs \
-    python3-fluent-logger \
-    python3-serial \
-    python3-zmq \
+RUN apt-get update && apt-get install --assume-yes \
+    gcc \
+    curl \
+    python3 \
+    python3-dev \
  && apt-get clean \
- && rm -rf /va/rlib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/wattmeter_sharp
 
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="/root/.local/bin:$PATH"
+
+COPY pyproject.toml .
+
+RUN poetry config virtualenvs.create false \
+ && poetry install \
+ && rm -rf ~/.cache
+
+FROM python:3.11.4-slim-bookworm as prod
+
+ENV TZ=Asia/Tokyo
+
+COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+WORKDIR /opt/wattmeter_sharp
 
 COPY . .
 
