@@ -1,4 +1,4 @@
-image: docker:23.0
+image: docker:24.0@sha256:3c6e4dca7a63c9a32a4e00da40461ce067f255987ccc9721cf18ffa087bcd1ef
 
 stages:
   - build
